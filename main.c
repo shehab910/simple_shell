@@ -38,6 +38,8 @@ int main(int argc, char **argv, char **env)
 	char *line = NULL;
 	size_t len = 0;
 	ssize_t read;
+	pid_t pid;
+	int status;
 
 	signal(SIGINT, skip);
 
@@ -53,9 +55,15 @@ int main(int argc, char **argv, char **env)
 		line[read - 1] = '\0';
 		char **args = wordsplit(line, &num_words);
 
-		execve(args[0], args, env);
+		pid = fork();
+		if (pid == 0)
+		{
+			execve(args[0], args, NULL);
+		}
+		else
+		{
+			wait(&status);
+		}
 		safePrint(PROMPT);
 	}
-
-	return (0);
 }
