@@ -20,7 +20,13 @@
 	}
 }*/
 
-int getTokensFromString(char *line, char ***args)
+/**
+ * setTokensFromString - Splits a string into tokens
+ * @line: The string to split
+ * @args: A pointer to an array of strings
+ * Return: 0 on success, -1 on failure
+ */
+int setTokensFromString(char *line, char ***args)
 {
 	char *token;
 	size_t size = TOKENSIZE, new_size, i = 0;
@@ -32,17 +38,10 @@ int getTokensFromString(char *line, char ***args)
 	if (*args == NULL)
 		return -1;
 
-	char *line_copy = strdup(line);
-	if (line_copy == NULL)
-	{
-		free(*args);
-		return -1;
-	}
-
-	token = strtok(line_copy, DELIMITER);
+	token = strtok(line, DELIMITER);
 	while (token)
 	{
-		(*args)[i++] = strdup(token);
+		(*args)[i] = strdup(token);
 
 		if (i + 2 >= size)
 		{
@@ -51,7 +50,6 @@ int getTokensFromString(char *line, char ***args)
 			if (temp == NULL)
 			{
 				free(*args);
-				free(line_copy);
 				return -1;
 			}
 
@@ -59,14 +57,30 @@ int getTokensFromString(char *line, char ***args)
 			size = new_size;
 		}
 
+		i++;
 		token = strtok(NULL, DELIMITER);
 	}
 
 	(*args)[i] = NULL;
 
-	free(line_copy);
-
 	return 0;
+}
+
+/**
+ * freeTokensFromString - Frees the memory allocated by setTokensFromString
+ * @args: The array of strings to free
+ */
+void freeTokensFromString(char **args)
+{
+	int i = 0;
+
+	while (args[i])
+	{
+		free(args[i]);
+		i++;
+	}
+
+	free(args);
 }
 
 int str_tok_num(const char *str, const char delim)

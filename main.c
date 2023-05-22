@@ -1,11 +1,3 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
-#include <signal.h>
-#include <string.h>
-#include <stdlib.h>
 #include "shell.h"
 
 #define PROMPT "$ "
@@ -43,6 +35,7 @@ int main(int argc, char **argv, char **envp)
 	pid_t pid;
 	int status;
 	int isPipedin = 0;
+	int returnStatus = 0;
 
 	/*
 	TODO:
@@ -69,9 +62,10 @@ int main(int argc, char **argv, char **envp)
 
 		line[read_size - 1] = '\0';
 
-		int num_words;
-		char **args = wordsplit(line, &num_words);
-		if (args == NULL)
+		char **args;
+		setTokensFromString(line, &args);
+
+		if (args == NULL || returnStatus == -1)
 		{
 			free(line);
 			return (0);
@@ -94,7 +88,7 @@ int main(int argc, char **argv, char **envp)
 		else
 		{
 			wait(&status);
-			free_words(args, num_words);
+			// free_words(args, num_words);
 			if (isPipedin)
 				safePrint(PROMPT);
 		}
