@@ -6,7 +6,7 @@
 #include <signal.h>
 #include <string.h>
 #include <stdlib.h>
-#include "strsplit.h"
+#include "shell.h"
 
 #define PROMPT "$ "
 
@@ -22,8 +22,7 @@ ssize_t safePrintErr(char *str)
 
 void skip(int sig)
 {
-	safePrint("\n");
-	safePrint(PROMPT);
+	(void)sig;
 }
 
 /**
@@ -33,37 +32,72 @@ void skip(int sig)
  *
  * Return: Always 0.
  */
-int main(int argc, char **argv, char **env)
+int main(int argc, char **argv, char **envp)
 {
+	// !FIXME: remove all fixemes and TODOs
+	(void)argc;
+	(void)argv;
 	char *line = NULL;
 	size_t len = 0;
-	ssize_t read;
+	ssize_t read_size;
 	pid_t pid;
 	int status;
+	int isPipedin = 0;
 
+	/*
+	TODO:
+	1. check if the file path going to execve exist or not
+
+
+	*/
 	signal(SIGINT, skip);
 
-	safePrint(PROMPT);
-	while ((read = getline(&line, &len, stdin)) != -1)
+	if (isatty(STDIN_FILENO))
+		isPipedin = 1;
+
+	if (isPipedin)
+		safePrint(PROMPT);
+
+	while ((read_size = getline(&line, &len, stdin)) != -1)
 	{
-		if (*line == '\n')
+		if (strcmp(line, "\n") == 0)
 		{
-			safePrint(PROMPT);
+			if (isPipedin)
+				safePrint(PROMPT);
 			continue;
 		}
+
+		line[read_size - 1] = '\0';
+
 		int num_words;
-		line[read - 1] = '\0';
 		char **args = wordsplit(line, &num_words);
+		if (args == NULL)
+		{
+			free(line);
+			return (0);
+		}
+		char *cmd = _which(args[0]);
 
 		pid = fork();
 		if (pid == 0)
 		{
-			execve(args[0], args, NULL);
+			int ret = execve(cmd, args, envp);
+			if (ret == -1)
+			{
+				safePrintErr(args[0]);
+				// safePrintErr(": 1: ");
+				// safePrintErr(args[1]);
+				// safePrintErr(": not found\n");
+				// return (127);
+			}
 		}
 		else
 		{
 			wait(&status);
+			free_words(args, num_words);
+			if (isPipedin)
+				safePrint(PROMPT);
 		}
-		safePrint(PROMPT);
+		free(line);
 	}
 }

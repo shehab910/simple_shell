@@ -1,5 +1,4 @@
-#include <stdlib.h>
-#include <string.h>
+#include "shell.h"
 
 /*FIXME: REMOVE
  void test_str_split()
@@ -20,6 +19,55 @@
 		free_words(words, num_words);
 	}
 }*/
+
+int getTokensFromString(char *line, char ***args)
+{
+	char *token;
+	size_t size = TOKENSIZE, new_size, i = 0;
+
+	if (strcmp(line, "\n") == 0)
+		return -1;
+
+	*args = malloc(size * sizeof(char *));
+	if (*args == NULL)
+		return -1;
+
+	char *line_copy = strdup(line);
+	if (line_copy == NULL)
+	{
+		free(*args);
+		return -1;
+	}
+
+	token = strtok(line_copy, DELIMITER);
+	while (token)
+	{
+		(*args)[i++] = strdup(token);
+
+		if (i + 2 >= size)
+		{
+			new_size = size * 2;
+			char **temp = realloc(*args, new_size * sizeof(char *));
+			if (temp == NULL)
+			{
+				free(*args);
+				free(line_copy);
+				return -1;
+			}
+
+			*args = temp;
+			size = new_size;
+		}
+
+		token = strtok(NULL, DELIMITER);
+	}
+
+	(*args)[i] = NULL;
+
+	free(line_copy);
+
+	return 0;
+}
 
 int str_tok_num(const char *str, const char delim)
 {
