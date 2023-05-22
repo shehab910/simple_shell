@@ -26,34 +26,35 @@
  * @args: A pointer to an array of strings
  * Return: 0 on success, -1 on failure
  */
-int setTokensFromString(char *line, char ***args)
+int setTokensFromString(shell_data_dt *data)
 {
 	char *token;
-	size_t size = TOKENSIZE, new_size, i = 0;
+	unsigned int size = TOKENSIZE, new_size, i = 0;
 
-	if (strcmp(line, "\n") == 0)
+	if (_strcmp(data->line, "\n") == 0)
 		return -1;
 
-	*args = malloc(size * sizeof(char *));
-	if (*args == NULL)
+	data->args = malloc(size * sizeof(char *));
+	if (data->args == NULL)
 		return -1;
 
-	token = strtok(line, DELIMITER);
+	token = strtok(data->line, DELIMITER);
 	while (token)
 	{
-		(*args)[i] = strdup(token);
+		(data->args)[i] = strdup(token);
 
 		if (i + 2 >= size)
 		{
 			new_size = size * 2;
-			char **temp = realloc(*args, new_size * sizeof(char *));
+			char **temp = _realloc(data->args, size * sizeof(char *),
+								   new_size * sizeof(char *));
 			if (temp == NULL)
 			{
-				free(*args);
+				free(data->args);
 				return -1;
 			}
 
-			*args = temp;
+			data->args = temp;
 			size = new_size;
 		}
 
@@ -61,7 +62,7 @@ int setTokensFromString(char *line, char ***args)
 		token = strtok(NULL, DELIMITER);
 	}
 
-	(*args)[i] = NULL;
+	data->args[i] = NULL;
 
 	return 0;
 }
