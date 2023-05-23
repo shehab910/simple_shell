@@ -50,5 +50,6 @@ void *arrayFill(void *array, int element, unsigned int length);
 int _strcmp(const char *s1, const char *s2);
 int isPath(const char *str);
 int isRelativePath(const char *str);
+int charToNumber(char *c);
 
 #endif

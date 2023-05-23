@@ -15,6 +15,17 @@ void skip(int sig)
 	(void)sig;
 }
 
+void execute_env_command(char **envp)
+{
+	int i = 0;
+	while (envp[i] != NULL)
+	{
+		safePrint(envp[i]);
+		safePrint("\n");
+		i++;
+	}
+}
+
 /**
  * main - check the code
  * @argc: number of arguments
@@ -63,7 +74,32 @@ int main(int argc, char **argv, char **envp)
 			continue;
 		}
 		else if (_strcmp(shellData.args[0], "exit") == 0)
+		{
+			// if shell.args has 2 arguments
+			if (shellData.args[1] != NULL)
+			{
+				// if shell.args[1] is a number
+				if (charToNumber(shellData.args[1]) <= -1)
+				{
+					SAFE_PRINT_ERR(shellData.shellName);
+					SAFE_PRINT_ERR(": 1: exit: Illegal number: ");
+					SAFE_PRINT_ERR(shellData.args[1]);
+					SAFE_PRINT_ERR("\n");
+					exit_status = 2;
+					freeShellData(&shellData);
+					continue;
+				}
+				exit_status = charToNumber(shellData.args[1]);
+			}
+			freeShellData(&shellData);
 			break;
+		}
+		else if (strcmp(shellData.args[0], "env") == 0)
+		{
+			execute_env_command(envp);
+			freeShellData(&shellData);
+			continue;
+		}
 
 		char *cmd = _which(shellData.args[0]);
 		if (cmd == NULL)
