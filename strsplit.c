@@ -38,10 +38,10 @@ int setTokensFromString(shell_data_dt *data)
 	if (data->args == NULL)
 		return -1;
 
-	token = strtok(data->line, DELIMITER);
+	token = strtok(data->line, WHITESPACE);
 	while (token)
 	{
-		(data->args)[i] = strdup(token);
+		data->args[i] = token;
 
 		if (i + 2 >= size)
 		{
@@ -59,7 +59,7 @@ int setTokensFromString(shell_data_dt *data)
 		}
 
 		i++;
-		token = strtok(NULL, DELIMITER);
+		token = strtok(NULL, WHITESPACE);
 	}
 
 	data->args[i] = NULL;

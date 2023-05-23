@@ -1,13 +1,11 @@
 #include "shell.h"
 
-#define PROMPT "$ "
-
 ssize_t safePrint(char *str)
 {
 	return write(STDOUT_FILENO, str, strlen(str));
 }
 
-ssize_t safePrintErr(char *str)
+ssize_t safePrintErr(const char *str)
 {
 	return write(STDERR_FILENO, str, strlen(str));
 }
@@ -32,21 +30,19 @@ int main(int argc, char **argv, char **envp)
 	shell_data_dt shellData;
 	pid_t pid;
 	int status;
+	int exit_status = 0;
 
 	initShellData(&shellData);
+	if (isatty(STDIN_FILENO))
+		shellData.shellName = "hsh";
+	else
+		shellData.shellName = (const char *)argv[0];
 	/*
 	TODO:
 	1. check if the file path going to execve exist or not
 
-
 	*/
 	signal(SIGINT, skip);
-
-	// if (isatty(STDIN_FILENO))
-	// 	isPipedin = 1;
-
-	// if (isPipedin)
-	// 	safePrint(PROMPT);
 
 	while (1 == 1)
 	{
@@ -61,29 +57,55 @@ int main(int argc, char **argv, char **envp)
 			freeShellData(&shellData);
 			continue;
 		}
+		if (shellData.args[0] == NULL)
+		{
+			freeShellData(&shellData);
+			continue;
+		}
 
 		char *cmd = _which(shellData.args[0]);
+		if (cmd == NULL)
+		{
+			SAFE_PRINT_ERR(shellData.shellName);
+			SAFE_PRINT_ERR(": 1: ");
+			SAFE_PRINT_ERR(shellData.args[0]);
+			SAFE_PRINT_ERR(": not found\n");
+			freeShellData(&shellData);
+			if (isatty(STDIN_FILENO))
+				continue;
+			exit_status = 127;
+		}
 
 		pid = fork();
-		if (pid == 0)
+		if (pid == 0 && cmd != NULL)
 		{
+			signal(SIGINT, SIG_DFL);
 			int ret = execve(cmd, shellData.args, envp);
 			if (ret == -1)
 			{
+				safePrintErr(shellData.shellName);
+				safePrintErr(": 1: ");
 				safePrintErr(shellData.args[0]);
-				// safePrintErr(": 1: ");
-				// safePrintErr(args[1]);
-				// safePrintErr(": not found\n");
-				// return (127);
+				safePrintErr(": not found\n");
+				exit_status = 127;
 			}
 		}
-		else
+		else if (pid > 0)
 		{
-			wait(&status);
-			// free_words(args, num_words);
-			// if (isPipedin)
-			// 	safePrint(PROMPT);
+			// Parent process
+			waitpid(pid, &status, 0);
+
+			if (WIFEXITED(status))
+			{
+				exit_status = WEXITSTATUS(status);
+			}
+			// else if (WIFSIGNALED(status))
+			// {
+			// 	int signal_num = WTERMSIG(status);
+			// 	printf("Child process terminated by signal: %d\n", signal_num);
+			// }
 		}
 		// free_data(&shellData);
 	}
+	return exit_status;
 }

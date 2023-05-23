@@ -59,3 +59,30 @@ void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size)
 	}
 	return (result);
 }
+
+/**
+ * isPath - Checks if a string is a path
+ * @str: The string to check
+ * Return: 1 if true, 0 if false
+ */
+int isPath(const char *str)
+{
+	if (_strlen(str) >= 1 && str[0] == '/')
+		return (1);
+	return (0);
+}
+
+/**
+ * isRelativePath - Checks if a string is a relative path
+ * @str: The string to check
+ * Return: 1 if true, 0 if false
+ */
+int isRelativePath(const char *str)
+{
+	int isDotSlash = (_strlen(str) >= 2 && str[0] == '.' && str[1] == '/');
+	int isDotDotSlash = (_strlen(str) >= 3 && str[0] == '.' && str[1] == '.' &&
+						 str[2] == '/');
+	if (isDotSlash || isDotDotSlash)
+		return (1);
+	return (0);
+}

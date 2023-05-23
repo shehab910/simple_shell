@@ -4,7 +4,7 @@
  * @s: string to be measured
  * Return: length of a string
  */
-int _strlen(char *s)
+int _strlen(const char *s)
 {
 	int i = 0;
 

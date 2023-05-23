@@ -4,26 +4,25 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include "shell.h"
-// bash command to rename a file removing .passed
-//
+
 #define PATH_DELIM ':'
+
 //! TODO: handle errors without using printf & remove sprintf
 char *_which(const char *command)
 {
 	struct stat st;
 
 	if (command == NULL)
-	{
 		return NULL;
-	}
-	char *path = getenv("PATH");
-	if (path == NULL)
-	{
-		printf("Error: PATH environment variable not found.\n");
-		return NULL;
-	}
-	if (stat(command, &st) == 0)
+
+	if ((isPath(command) || isRelativePath(command)) && stat(command, &st) == 0)
 		return (char *)(command);
+
+	char *path = getenv("PATH");
+	if (path == NULL || _strlen(path) == 0)
+	{
+		return NULL; // strdup(command);
+	}
 
 	char *_path = strdup(path);
 

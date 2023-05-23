@@ -13,14 +13,16 @@
 #define BUFSIZE 512
 #define TOKENSIZE 64
 #define SAFE_PRINT(c) (write(STDOUT_FILENO, c, _strlen(c)))
+#define SAFE_PRINT_ERR(c) (write(STDERR_FILENO, c, _strlen(c)))
 #define PROMPT "$ "
 #define SUCCESS (1)
 #define FAIL (-1)
 // #define NEUTRAL (0)
-#define DELIMITER " \n\t\r\a\v"
+#define WHITESPACE " \n\t\r\a\v"
 
 typedef struct shell_data
 {
+	const char *shellName;
 	char *line;
 	char **args;
 	// char *cmd;
@@ -43,8 +45,10 @@ void initShellData(shell_data_dt *data);
 int freeShellData(shell_data_dt *data);
 void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
 char *_memcpy(char *dest, char *src, unsigned int n);
-int _strlen(char *s);
+int _strlen(const char *s);
 void *arrayFill(void *array, int element, unsigned int length);
 int _strcmp(const char *s1, const char *s2);
+int isPath(const char *str);
+int isRelativePath(const char *str);
 
 #endif
