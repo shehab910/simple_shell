@@ -62,6 +62,8 @@ int main(int argc, char **argv, char **envp)
 			freeShellData(&shellData);
 			continue;
 		}
+		else if (_strcmp(shellData.args[0], "exit") == 0)
+			break;
 
 		char *cmd = _which(shellData.args[0]);
 		if (cmd == NULL)
