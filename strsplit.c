@@ -106,21 +106,26 @@ int str_tok_num(const char *str, const char delim)
 	return num_words;
 }
 
-int alloc_copy_word(char **words, int word_index, const char *str, int word_length)
+/**
+ * copyWordAlloc - Copies a word into a newly allocated string
+ * @words: The array of strings to copy the word into
+ * @wordIndex: The index of the word to copy
+ * @str: The string to copy from
+ * @wordLength: The length of the word to copy
+ * Return: 0 on success, 1 on failure
+ */
+int copyWordAlloc(char **words, int wordIndex, const char *str, int wordLength)
 {
-	words[word_index] = (char *)malloc((word_length + 1) * sizeof(char));
-	if (words[word_index] == NULL)
+	words[wordIndex] = malloc((wordLength + 1) * sizeof(char));
+	if (words[wordIndex] == NULL)
 	{
-		// Memory allocation failed, free previously allocated memory
-		for (int i = 0; i < word_index; i++)
-		{
+		for (int i = 0; i < wordIndex; i++)
 			free(words[i]);
-		}
 		free(words);
 		return 1;
 	}
-	strncpy(words[word_index], str, word_length);
-	words[word_index][word_length] = '\0';
+	strncpy(words[wordIndex], str, wordLength);
+	words[wordIndex][wordLength] = '\0';
 	return 0;
 }
 
@@ -151,7 +156,7 @@ char **strsplit(const char *str, int *num_words, const char delim)
 			if (in_word)
 			{
 				int word_length = ptr - str;
-				int failed = alloc_copy_word(words, word_index, str, word_length);
+				int failed = copyWordAlloc(words, word_index, str, word_length);
 				if (failed)
 					return NULL;
 				word_index++;
@@ -174,7 +179,7 @@ char **strsplit(const char *str, int *num_words, const char delim)
 	if (in_word)
 	{
 		int word_length = ptr - str;
-		int failed = alloc_copy_word(words, word_index, str, word_length);
+		int failed = copyWordAlloc(words, word_index, str, word_length);
 		if (failed)
 			return NULL;
 		word_index++;
