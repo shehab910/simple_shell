@@ -12,7 +12,17 @@ ssize_t safePrintErr(const char *str)
 
 void skip(int sig)
 {
-	(void)sig;
+	if (sig == SIGINT)
+	{
+		SAFE_PRINT("\n");
+		SAFE_PRINT(PROMPT);
+	}
+}
+
+void __exit(shell_data_dt *shellData, int exit_status)
+{
+	freeShellData(shellData);
+	exit(exit_status);
 }
 
 void execute_env_command(char **envp)
@@ -40,7 +50,6 @@ int main(int argc, char **argv, char **envp)
 	pid_t pid;
 	int status;
 	int exit_status = 0;
-	char *cmd;
 	int ret;
 
 	(void)argc;
@@ -60,20 +69,20 @@ int main(int argc, char **argv, char **envp)
 
 	while (1 == 1)
 	{
+		freeShellData(&shellData);
 		if (handleInput(&shellData) < 0)
 		{
 			if (isatty(STDIN_FILENO))
 				SAFE_PRINT("\n");
+			__exit(&shellData, exit_status);
 			break;
 		}
 		if (setTokensFromString(&shellData) < 0)
 		{
-			freeShellData(&shellData);
 			continue;
 		}
 		if (shellData.args[0] == NULL)
 		{
-			freeShellData(&shellData);
 			continue;
 		}
 		else if (_strcmp(shellData.args[0], "exit") == 0)
@@ -89,39 +98,36 @@ int main(int argc, char **argv, char **envp)
 					SAFE_PRINT_ERR(shellData.args[1]);
 					SAFE_PRINT_ERR("\n");
 					exit_status = 2;
-					freeShellData(&shellData);
 					continue;
 				}
 				exit_status = charToNumber(shellData.args[1]);
 			}
-			freeShellData(&shellData);
+			__exit(&shellData, exit_status);
 			break;
 		}
 		else if (strcmp(shellData.args[0], "env") == 0)
 		{
 			execute_env_command(envp);
-			freeShellData(&shellData);
 			continue;
 		}
 
-		cmd = _which(shellData.args[0]);
-		if (cmd == NULL)
+		shellData.cmd = _which(shellData.args[0]);
+		if (shellData.cmd == NULL)
 		{
 			SAFE_PRINT_ERR(shellData.shellName);
 			SAFE_PRINT_ERR(": 1: ");
 			SAFE_PRINT_ERR(shellData.args[0]);
 			SAFE_PRINT_ERR(": not found\n");
-			freeShellData(&shellData);
 			if (isatty(STDIN_FILENO))
 				continue;
 			exit_status = 127;
 		}
 
 		pid = fork();
-		if (pid == 0 && cmd != NULL)
+		if (pid == 0 && shellData.cmd != NULL)
 		{
 			signal(SIGINT, SIG_DFL);
-			ret = execve(cmd, shellData.args, envp);
+			ret = execve(shellData.cmd, shellData.args, envp);
 			if (ret == -1)
 			{
 				safePrintErr(shellData.shellName);
@@ -135,7 +141,6 @@ int main(int argc, char **argv, char **envp)
 		{
 			/* Parent process */
 			waitpid(pid, &status, 0);
-
 			if (WIFEXITED(status))
 			{
 				exit_status = WEXITSTATUS(status);
@@ -146,7 +151,7 @@ int main(int argc, char **argv, char **envp)
 			/* 	printf("Child process terminated by signal: %d\n", signal_num); */
 			/* } */
 		}
-		/* free_data(&shellData); */
+		/* freeShellData(&shellData);*/
 	}
 	return exit_status;
 }

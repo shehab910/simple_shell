@@ -24,7 +24,7 @@ typedef struct shell_data
 	const char *shellName;
 	char *line;
 	char **args;
-	/* char *cmd; */
+	char *cmd;
 	/* char *error_msg; */
 	/* char *oldpwd; */
 	/* unsigned long int index; */

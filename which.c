@@ -22,7 +22,7 @@ char *_which(const char *command)
 		return NULL;
 
 	if ((isPath(command) || isRelativePath(command)) && stat(command, &st) == 0)
-		return (char *)(command);
+		return (char *)strdup(command);
 
 	path = getenv("PATH");
 	if (path == NULL || _strlen(path) == 0)
@@ -38,6 +38,7 @@ char *_which(const char *command)
 	{
 		free_words(tokens, num_tokens);
 		printf("Error: Memory allocation failed.\n");
+		free(_path);
 		return NULL;
 	}
 
@@ -48,17 +49,20 @@ char *_which(const char *command)
 		{
 			free_words(tokens, num_tokens);
 			printf("Error: Memory allocation failed.\n");
+			free(_path);
 			return NULL;
 		}
 		sprintf(file_path, "%s/%s", tokens[i], command);
 		if (stat(file_path, &st) == 0)
 		{
+			free(_path);
 			free_words(tokens, num_tokens);
 			return file_path;
 		}
 
 		free(file_path);
 	}
+	free(_path);
 	free_words(tokens, num_tokens);
 	return NULL;
 }

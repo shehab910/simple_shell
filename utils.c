@@ -46,7 +46,10 @@ void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size)
 	}
 	result = malloc(new_size);
 	if (result == NULL)
+	{
+		free(ptr);
 		return (NULL);
+	}
 	if (ptr == NULL)
 	{
 		arrayFill(result, '\0', new_size);
