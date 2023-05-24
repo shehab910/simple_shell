@@ -17,7 +17,6 @@
 #define PROMPT "$ "
 #define SUCCESS (1)
 #define FAIL (-1)
-// #define NEUTRAL (0)
 #define WHITESPACE " \n\t\r\a\v"
 
 typedef struct shell_data
@@ -25,11 +24,11 @@ typedef struct shell_data
 	const char *shellName;
 	char *line;
 	char **args;
-	// char *cmd;
-	// char *error_msg;
-	// char *oldpwd;
-	// unsigned long int index;
-	// char *env;
+	/* char *cmd; */
+	/* char *error_msg; */
+	/* char *oldpwd; */
+	/* unsigned long int index; */
+	/* char *env; */
 } shell_data_dt;
 
 int str_tok_num(const char *str, const char delim);

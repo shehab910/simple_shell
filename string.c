@@ -25,6 +25,8 @@ int _strlen(const char *s)
  */
 int _strcmp(const char *s1, const char *s2)
 {
+	int i;
+
 	if (s1 == NULL || s2 == NULL)
 	{
 		if (s1 == s2)
@@ -34,8 +36,6 @@ int _strcmp(const char *s1, const char *s2)
 		else
 			return 1;
 	}
-
-	int i;
 	for (i = 0; s1[i] != '\0' && s2[i] != '\0'; i++)
 	{
 		if (s1[i] != s2[i])

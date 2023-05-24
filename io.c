@@ -15,7 +15,7 @@ int handleInput(shell_data_dt *shellData)
 		return (FAIL);
 	if (isatty(STDIN_FILENO))
 		SAFE_PRINT(PROMPT);
-	//! TODO - refactor this for loop
+	/* ! TODO - refactor this for loop */
 	for (currentChar = shellData->line, endOfBuffer = shellData->line + size;;)
 	{
 		read_st = read(STDIN_FILENO, &input_char, 1);

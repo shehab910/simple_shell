@@ -7,10 +7,16 @@
 
 #define PATH_DELIM ':'
 
-//! TODO: handle errors without using printf & remove sprintf
+/*! TODO: handle errors without using printf & remove sprintf */
 char *_which(const char *command)
 {
+	char *_path;
+	char *path;
+	int i;
+	int num_tokens;
 	struct stat st;
+	char **tokens;
+	char *file_path;
 
 	if (command == NULL)
 		return NULL;
@@ -18,16 +24,16 @@ char *_which(const char *command)
 	if ((isPath(command) || isRelativePath(command)) && stat(command, &st) == 0)
 		return (char *)(command);
 
-	char *path = getenv("PATH");
+	path = getenv("PATH");
 	if (path == NULL || _strlen(path) == 0)
 	{
-		return NULL; // strdup(command);
+		return NULL; /* strdup(command); */
 	}
 
-	char *_path = strdup(path);
+	_path = strdup(path);
 
-	int num_tokens = -1;
-	char **tokens = strsplit(_path, &num_tokens, PATH_DELIM);
+	num_tokens = -1;
+	tokens = strsplit(_path, &num_tokens, PATH_DELIM);
 	if (tokens == NULL || num_tokens == -1)
 	{
 		free_words(tokens, num_tokens);
@@ -35,9 +41,9 @@ char *_which(const char *command)
 		return NULL;
 	}
 
-	for (int i = 0; i < num_tokens; i++)
+	for (i = 0; i < num_tokens; i++)
 	{
-		char *file_path = malloc(strlen(tokens[i]) + strlen(command) + 2);
+		file_path = malloc(strlen(tokens[i]) + strlen(command) + 2);
 		if (file_path == NULL)
 		{
 			free_words(tokens, num_tokens);

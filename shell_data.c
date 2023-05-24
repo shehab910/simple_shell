@@ -8,7 +8,7 @@ void initShellData(shell_data_dt *data)
 {
     data->line = NULL;
     data->args = NULL;
-    // Initialize other members as needed
+    /* Initialize other members as needed */
 }
 
 /**
@@ -22,9 +22,9 @@ int freeShellData(shell_data_dt *data)
     data->line = NULL;
     free(data->args);
     data->args = NULL;
-    // free(data->cmd);
-    // data->cmd = NULL;
-    // free(data->error_msg);
-    // data->error_msg = NULL;
+    /* free(data->cmd); */
+    /* data->cmd = NULL; */
+    /* free(data->error_msg); */
+    /* data->error_msg = NULL; */
     return (0);
 }

@@ -20,7 +20,7 @@ void *arrayFill(void *array, int element, unsigned int length)
 	return (array);
 }
 
-//! TODO: CHANGE
+/*! TODO: CHANGE */
 char *_memcpy(char *dest, char *src, unsigned int n)
 {
 	unsigned int i;
@@ -32,7 +32,7 @@ char *_memcpy(char *dest, char *src, unsigned int n)
 	return (dest);
 }
 
-//! TODO: CHANGE
+/*! TODO: CHANGE */
 void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size)
 {
 	void *result;

@@ -30,6 +30,7 @@ int setTokensFromString(shell_data_dt *data)
 {
 	char *token;
 	unsigned int size = TOKENSIZE, new_size, i = 0;
+	char **temp;
 
 	if (_strcmp(data->line, "\n") == 0)
 		return -1;
@@ -46,8 +47,8 @@ int setTokensFromString(shell_data_dt *data)
 		if (i + 2 >= size)
 		{
 			new_size = size * 2;
-			char **temp = _realloc(data->args, size * sizeof(char *),
-								   new_size * sizeof(char *));
+			temp = _realloc(data->args, size * sizeof(char *),
+							new_size * sizeof(char *));
 			if (temp == NULL)
 			{
 				free(data->args);
@@ -86,10 +87,11 @@ void freeTokensFromString(char **args)
 
 int str_tok_num(const char *str, const char delim)
 {
-	// Count the number of words in the string
+	/* Count the number of words in the string */
 	int num_words = 0;
 	const char *ptr = str;
 	int in_word = 0;
+
 	while (*ptr != '\0')
 	{
 		if (*ptr == delim)
@@ -116,10 +118,12 @@ int str_tok_num(const char *str, const char delim)
  */
 int copyWordAlloc(char **words, int wordIndex, const char *str, int wordLength)
 {
+	int i;
+
 	words[wordIndex] = malloc((wordLength + 1) * sizeof(char));
 	if (words[wordIndex] == NULL)
 	{
-		for (int i = 0; i < wordIndex; i++)
+		for (i = 0; i < wordIndex; i++)
 			free(words[i]);
 		free(words);
 		return 1;
@@ -131,6 +135,13 @@ int copyWordAlloc(char **words, int wordIndex, const char *str, int wordLength)
 
 char **strsplit(const char *str, int *num_words, const char delim)
 {
+	int word_index;
+	char **words;
+	const char *ptr;
+	int in_word;
+	int word_length;
+	int failed;
+
 	if (str == NULL || num_words == NULL || delim == 0)
 	{
 		return NULL;
@@ -138,48 +149,48 @@ char **strsplit(const char *str, int *num_words, const char delim)
 
 	*num_words = str_tok_num(str, delim);
 
-	// Allocate memory for the array of strings
-	char **words = (char **)malloc(((*num_words) + 1) * sizeof(char *));
+	/* Allocate memory for the array of strings */
+	words = (char **)malloc(((*num_words) + 1) * sizeof(char *));
 	if (words == NULL)
 	{
 		return NULL;
 	}
 
-	// Split the string into words
-	int word_index = 0;
-	const char *ptr = str;
-	int in_word = 0;
+	/* Split the string into words */
+	word_index = 0;
+	ptr = str;
+	in_word = 0;
 	while (*ptr != '\0')
 	{
 		if (*ptr == delim)
 		{
 			if (in_word)
 			{
-				int word_length = ptr - str;
-				int failed = copyWordAlloc(words, word_index, str, word_length);
+				word_length = ptr - str;
+				failed = copyWordAlloc(words, word_index, str, word_length);
 				if (failed)
 					return NULL;
 				word_index++;
 				in_word = 0;
 			}
-			str = ptr + 1; // Update the start of the next word
+			str = ptr + 1; /* Update the start of the next word */
 		}
 		else
 		{
 			if (!in_word)
 			{
-				// Start of word
+				/* Start of word */
 				in_word = 1;
 			}
 		}
 		ptr++;
 	}
 
-	// Handle the last word
+	/* Handle the last word */
 	if (in_word)
 	{
-		int word_length = ptr - str;
-		int failed = copyWordAlloc(words, word_index, str, word_length);
+		word_length = ptr - str;
+		failed = copyWordAlloc(words, word_index, str, word_length);
 		if (failed)
 			return NULL;
 		word_index++;
@@ -195,9 +206,11 @@ char **wordsplit(const char *str, int *num_words)
 
 void free_words(char **words, int num_words)
 {
+	int i;
+
 	if (words != NULL)
 	{
-		for (int i = 0; i < num_words; i++)
+		for (i = 0; i < num_words; i++)
 		{
 			free(words[i]);
 		}

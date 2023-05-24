@@ -35,13 +35,16 @@ void execute_env_command(char **envp)
  */
 int main(int argc, char **argv, char **envp)
 {
-	// !FIXME: remove all fixemes and TODOs
-	(void)argc;
-	(void)argv;
+	/* !FIXME: remove all fixemes and TODOs */
 	shell_data_dt shellData;
 	pid_t pid;
 	int status;
 	int exit_status = 0;
+	char *cmd;
+	int ret;
+
+	(void)argc;
+	(void)argv;
 
 	initShellData(&shellData);
 	if (isatty(STDIN_FILENO))
@@ -75,10 +78,10 @@ int main(int argc, char **argv, char **envp)
 		}
 		else if (_strcmp(shellData.args[0], "exit") == 0)
 		{
-			// if shell.args has 2 arguments
+			/* if shell.args has 2 arguments */
 			if (shellData.args[1] != NULL)
 			{
-				// if shell.args[1] is a number
+				/* if shell.args[1] is a number */
 				if (charToNumber(shellData.args[1]) <= -1)
 				{
 					SAFE_PRINT_ERR(shellData.shellName);
@@ -101,7 +104,7 @@ int main(int argc, char **argv, char **envp)
 			continue;
 		}
 
-		char *cmd = _which(shellData.args[0]);
+		cmd = _which(shellData.args[0]);
 		if (cmd == NULL)
 		{
 			SAFE_PRINT_ERR(shellData.shellName);
@@ -118,7 +121,7 @@ int main(int argc, char **argv, char **envp)
 		if (pid == 0 && cmd != NULL)
 		{
 			signal(SIGINT, SIG_DFL);
-			int ret = execve(cmd, shellData.args, envp);
+			ret = execve(cmd, shellData.args, envp);
 			if (ret == -1)
 			{
 				safePrintErr(shellData.shellName);
@@ -130,20 +133,20 @@ int main(int argc, char **argv, char **envp)
 		}
 		else if (pid > 0)
 		{
-			// Parent process
+			/* Parent process */
 			waitpid(pid, &status, 0);
 
 			if (WIFEXITED(status))
 			{
 				exit_status = WEXITSTATUS(status);
 			}
-			// else if (WIFSIGNALED(status))
-			// {
-			// 	int signal_num = WTERMSIG(status);
-			// 	printf("Child process terminated by signal: %d\n", signal_num);
-			// }
+			/* else if (WIFSIGNALED(status)) */
+			/* { */
+			/* 	int signal_num = WTERMSIG(status); */
+			/* 	printf("Child process terminated by signal: %d\n", signal_num); */
+			/* } */
 		}
-		// free_data(&shellData);
+		/* free_data(&shellData); */
 	}
 	return exit_status;
 }
