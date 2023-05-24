@@ -1,8 +1,8 @@
 #include "shell.h"
 
 /**
- * handleInput - Reads a line from stdin
- * @line: A pointer to a string
+ * handleInput - reads input from stdin
+ * @shellData: A pointer to a shell_data_dt struct
  * Return: 0 on success, -1 on failure
  */
 int handleInput(shell_data_dt *shellData)
@@ -40,4 +40,37 @@ int handleInput(shell_data_dt *shellData)
 			currentChar = shellData->line + length;
 		}
 	}
+}
+
+/**
+ * safePrint - Prints a string to stdout
+ * @str: The string to print
+ * Return: The number of bytes printed
+ */
+ssize_t safePrint(char *str)
+{
+	return (write(STDOUT_FILENO, str, strlen(str)));
+}
+
+/**
+ * safePrintErr - Prints a string to stderr
+ * @str: The string to print
+ * Return: The number of bytes printed
+ */
+ssize_t safePrintErr(const char *str)
+{
+	return (write(STDERR_FILENO, str, strlen(str)));
+}
+
+/**
+ * printNotFoundErr - Prints a not found error message
+ * @shellName: The name of the shell
+ * @cmd: The command that was not found
+ */
+void printNotFoundErr(const char *shellName, char *cmd)
+{
+	SAFE_PRINT_ERR(shellName);
+	SAFE_PRINT_ERR(": 1: ");
+	SAFE_PRINT_ERR(cmd);
+	SAFE_PRINT_ERR(": not found\n");
 }

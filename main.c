@@ -1,15 +1,9 @@
 #include "shell.h"
 
-ssize_t safePrint(char *str)
-{
-	return write(STDOUT_FILENO, str, strlen(str));
-}
-
-ssize_t safePrintErr(const char *str)
-{
-	return write(STDERR_FILENO, str, strlen(str));
-}
-
+/**
+ * skip - Skips the INT signal
+ * @sig: The signal
+ */
 void skip(int sig)
 {
 	if (sig == SIGINT)
@@ -19,54 +13,93 @@ void skip(int sig)
 	}
 }
 
+/**
+ * __exit - Exits the shell after freeing the shell data
+ * @shellData: The shell data
+ * @exit_status: The exit status
+ */
 void __exit(shell_data_dt *shellData, int exit_status)
 {
 	freeShellData(shellData);
 	exit(exit_status);
 }
 
-void execute_env_command(char **envp)
+/**
+ * handleCommand - Handles the execution of a command
+ * @shellData: The shell data
+ * @exit_status: The exit status
+ * @envp: The environment variables
+ */
+void handleCommand(shell_data_dt *shellData, int *exit_status, char **envp)
 {
-	int i = 0;
-	while (envp[i] != NULL)
+	pid_t pid;
+	int status, ret = 0;
+
+	pid = fork();
+	if (pid == 0 && shellData->cmd != NULL)
 	{
-		safePrint(envp[i]);
-		safePrint("\n");
-		i++;
+		signal(SIGINT, SIG_DFL);
+		ret = execve(shellData->cmd, shellData->args, envp);
+		if (ret == -1)
+		{
+			printNotFoundErr(shellData->shellName, shellData->args[0]);
+			*exit_status = 127;
+		}
+	}
+	else if (pid > 0)
+	{
+		waitpid(pid, &status, 0);
+		if (WIFEXITED(status))
+			*exit_status = WEXITSTATUS(status);
+		/* else if (WIFSIGNALED(status)) */
+		/* { */
+		/* int signal_num = WTERMSIG(status); */
+		/* printf("Child process terminated by signal: %d\n", signal_num); */
+		/* } */
 	}
 }
 
 /**
- * main - check the code
+ * checkBuiltins - Checks if the command is a builtin
+ * @shellData: The shell data
+ * @exit_status: The exit status
+ * @envp: The environment variables
+ * Return: CONTINUE if the command is a builtin, 0 otherwise
+ */
+int checkBuiltins(shell_data_dt *shellData, int *exit_status, char **envp)
+{
+	if (_strcmp(shellData->args[0], "exit") == 0)
+	{
+		return (execExitCommand(shellData, exit_status));
+	}
+	else if (_strcmp(shellData->args[0], "env") == 0)
+	{
+		executeEnvCommand(envp);
+		return (CONTINUE);
+	}
+	return (0);
+}
+
+/**
+ * main - Entry point for the hsh shell
  * @argc: number of arguments
  * @argv: array of arguments
- *
+ * @envp: array of environment variables
  * Return: Always 0.
  */
 int main(int argc, char **argv, char **envp)
 {
 	/* !FIXME: remove all fixemes and TODOs */
 	shell_data_dt shellData;
-	pid_t pid;
-	int status;
-	int exit_status = 0;
-	int ret;
+	int exit_status = 0, ret;
 
 	(void)argc;
-	(void)argv;
-
 	initShellData(&shellData);
 	if (isatty(STDIN_FILENO))
 		shellData.shellName = "hsh";
 	else
 		shellData.shellName = (const char *)argv[0];
-	/*
-	TODO:
-	1. check if the file path going to execve exist or not
-
-	*/
 	signal(SIGINT, skip);
-
 	while (1 == 1)
 	{
 		freeShellData(&shellData);
@@ -75,83 +108,23 @@ int main(int argc, char **argv, char **envp)
 			if (isatty(STDIN_FILENO))
 				SAFE_PRINT("\n");
 			__exit(&shellData, exit_status);
-			break;
 		}
 		if (setTokensFromString(&shellData) < 0)
-		{
 			continue;
-		}
 		if (shellData.args[0] == NULL)
-		{
 			continue;
-		}
-		else if (_strcmp(shellData.args[0], "exit") == 0)
-		{
-			/* if shell.args has 2 arguments */
-			if (shellData.args[1] != NULL)
-			{
-				/* if shell.args[1] is a number */
-				if (charToNumber(shellData.args[1]) <= -1)
-				{
-					SAFE_PRINT_ERR(shellData.shellName);
-					SAFE_PRINT_ERR(": 1: exit: Illegal number: ");
-					SAFE_PRINT_ERR(shellData.args[1]);
-					SAFE_PRINT_ERR("\n");
-					exit_status = 2;
-					continue;
-				}
-				exit_status = charToNumber(shellData.args[1]);
-			}
-			__exit(&shellData, exit_status);
-			break;
-		}
-		else if (strcmp(shellData.args[0], "env") == 0)
-		{
-			execute_env_command(envp);
+		ret = checkBuiltins(&shellData, &exit_status, envp);
+		if (ret == CONTINUE)
 			continue;
-		}
-
 		shellData.cmd = _which(shellData.args[0]);
 		if (shellData.cmd == NULL)
 		{
-			SAFE_PRINT_ERR(shellData.shellName);
-			SAFE_PRINT_ERR(": 1: ");
-			SAFE_PRINT_ERR(shellData.args[0]);
-			SAFE_PRINT_ERR(": not found\n");
+			printNotFoundErr(shellData.shellName, shellData.args[0]);
 			if (isatty(STDIN_FILENO))
 				continue;
 			exit_status = 127;
 		}
-
-		pid = fork();
-		if (pid == 0 && shellData.cmd != NULL)
-		{
-			signal(SIGINT, SIG_DFL);
-			ret = execve(shellData.cmd, shellData.args, envp);
-			if (ret == -1)
-			{
-				safePrintErr(shellData.shellName);
-				safePrintErr(": 1: ");
-				safePrintErr(shellData.args[0]);
-				safePrintErr(": not found\n");
-				exit_status = 127;
-			}
-		}
-		else if (pid > 0)
-		{
-			/* Parent process */
-			waitpid(pid, &status, 0);
-			if (WIFEXITED(status))
-			{
-				exit_status = WEXITSTATUS(status);
-			}
-			/* else if (WIFSIGNALED(status)) */
-			/* { */
-			/* 	int signal_num = WTERMSIG(status); */
-			/* 	printf("Child process terminated by signal: %d\n", signal_num); */
-			/* } */
-		}
-		/* freeShellData(&shellData);*/
+		handleCommand(&shellData, &exit_status, envp);
 	}
-	return exit_status;
+	return (exit_status);
 }

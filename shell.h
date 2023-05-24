@@ -17,8 +17,16 @@
 #define PROMPT "$ "
 #define SUCCESS (1)
 #define FAIL (-1)
+#define CONTINUE (255)
 #define WHITESPACE " \n\t\r\a\v"
 
+/**
+ * struct shell_data - Struct for shell data
+ * @shellName: The name of the shell
+ * @line: The line of input from the user
+ * @args: The arguments from the line of input
+ * @cmd: The command from the line of input
+ */
 typedef struct shell_data
 {
 	const char *shellName;
@@ -32,7 +40,7 @@ typedef struct shell_data
 } shell_data_dt;
 
 int str_tok_num(const char *str, const char delim);
-int copyWordAlloc(char **words, int word_index, const char *str, int word_length);
+int copyWordAlloc(char **words, int word_index, const char *str, int word_len);
 char **strsplit(const char *str, int *num_words, const char delim);
 char **wordsplit(const char *str, int *num_words);
 void free_words(char **words, int num_words);
@@ -50,5 +58,12 @@ int _strcmp(const char *s1, const char *s2);
 int isPath(const char *str);
 int isRelativePath(const char *str);
 int charToNumber(char *c);
+void printNotFoundErr(const char *shellName, char *cmd);
+int execExitCommand(shell_data_dt *shellData, int *exit_status);
+void executeEnvCommand(char **envp);
+int checkBuiltins(shell_data_dt *shellData, int *exit_status, char **envp);
+void handleCommand(shell_data_dt *shellData, int *exit_status, char **envp);
+void __exit(shell_data_dt *shellData, int exit_status);
+void skip(int sig);
 
 #endif
