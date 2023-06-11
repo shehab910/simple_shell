@@ -17,6 +17,7 @@ To try the **HSH** shell, follow these steps:
 
    ```
    git clone https://github.com/shehab910/simple_shell.git
+   cd simple_shell
    ```
 
 2. Once the repository is cloned, compile the shell by ensuring that it is tested and guarantees work based on **gcc-4.8** and the **C90 standard**. This ensures compatibility with the required compiler version and language standard.
